@@ -1,0 +1,15 @@
+{
+  "name": "file-watchdog",
+  "version": "0.1.0",
+  "description": "Monitors given dir for file changes and sends pushover notifications",
+  "main": "file-watchdog.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "file",
+    "monitor"
+  ],
+  "author": "Max Chodorowski",
+  "license": "MIT"
+}
