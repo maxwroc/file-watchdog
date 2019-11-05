@@ -1,18 +1,26 @@
 const { promisify } = require("util");
 const { resolve } = require("path");
 const fs = require("fs");
+const notify = require("./pushover").notify;
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
 const configFile = "./config.json";
 
+const userConfig = fs.existsSync(configFile) ? require(configFile) : {};
+
 const config = {
     directory: "/mnt/",
     extensions: ["jpg", "mp4"],
-    ...(fs.existsSync(configFile) ? require(configFile) : {})
+    ...userConfig,
+    pushover: {
+        user: null,
+        token: null,
+        title: "File watchdog",
+        ...(userConfig.pushover ? userConfig.pushover : {})
+    },
 }
-
 
 async function getFiles(dir, extensions, cb = null) {
     const subdirs = await readdir(dir);
@@ -41,8 +49,10 @@ const stats = config.extensions.reduce((a, ext) => {
 
 const statCollector = (file, ext) => stats[ext] += 1;
 
+const getMessage = () => Object.keys(stats).map(ext => `${ext}: ${stats[ext]}`).join(", ");
+
 getFiles(config.directory, config.extensions, statCollector)
-    .then(files => console.log(stats))
+    .then(() => notify(config, getMessage(), config.pushover.title))
     .catch(err => console.log(err));
 
 
