@@ -13,6 +13,7 @@
   "author": "Max Chodorowski",
   "license": "MIT",
   "dependencies": {
+    "check-disk-space": "^2.1.0",
     "request": "^2.88.0"
   }
 }
