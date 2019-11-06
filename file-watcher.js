@@ -7,7 +7,7 @@ const notify = require("./pushover").notify;
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
-const configFile = "./config.json";
+const configFile = resolve(__dirname, "config.json");
 
 const userConfig = fs.existsSync(configFile) ? require(configFile) : {};
 
@@ -25,10 +25,10 @@ const config = {
 }
 
 async function getFiles(dir, extensions, cb = null) {
-    const subdirs = await readdir(dir);
-    const files = await Promise.all(subdirs.map(async (subdir) => {
-        const res = resolve(dir, subdir);
-        return (await stat(res)).isDirectory() ? getFiles(res, extensions, cb) : [res];
+    const items = await readdir(dir);
+    const files = await Promise.all(items.map(async (item) => {
+        const itemPath = resolve(dir, item);
+        return (await stat(itemPath)).isDirectory() ? getFiles(itemPath, extensions, cb) : [itemPath];
     }));
 
     return files.reduce(
@@ -48,23 +48,28 @@ const stats = config.extensions.reduce((a, ext) => {
     return a;
 }, {});
 
+const numberWithCommas = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
 async function getDiskFreeSpace(config) {
     if (!config.diskUsage) {
         return "";
     }
 
-    const diskStats = await checkDiskSpace('C:/blabla/bla'); /* { free: 12345678, size: 98756432 } */
+    const diskStats = await checkDiskSpace(config.directory); /* { free: 12345678, size: 98756432 } */
 
-    return ` ${Math.round(diskStats.free)} MB`
+    return ` [${numberWithCommas(Math.round(diskStats.free / (1024 * 1024)))} MB free]`
 }
 
 const statCollector = (file, ext) => stats[ext] += 1;
 
-const getMessage = () => Object.keys(stats).map(ext => `${ext}: ${stats[ext]}`).join(", ") + getDiskFreeSpace(config);
+const getMessage = async () => Object.keys(stats).map(ext => `${ext}: ${stats[ext]}`).join(", ") + await getDiskFreeSpace(config);
+
 
 getFiles(config.directory, config.extensions, statCollector)
-    .then(() => notify(config, getMessage(), config.pushover.title))
+    .then(files => getMessage())
+    .then(msg => notify(config, msg, config.pushover.title))
     .catch(err => console.log(err));
+
 
 
 
