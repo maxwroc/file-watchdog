@@ -9,7 +9,7 @@ const notify = (config, msg, title) => {
 
     if (config.test) {
         console.log(title, msg);
-        return;
+        return true;
     }
 
     request.post("https://api.pushover.net/1/messages.json", {
@@ -29,6 +29,8 @@ const notify = (config, msg, title) => {
             console.log(body);
         }
     );
+
+    return true;
 }
 
 exports.notify = notify;

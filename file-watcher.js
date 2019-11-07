@@ -6,6 +6,7 @@ const notify = require("./pushover").notify;
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
+const writeFile = promisify(fs.writeFile);
 
 const configFile = resolve(__dirname, "config.json");
 
@@ -43,10 +44,7 @@ async function getFiles(dir, extensions, cb = null) {
     );
 }
 
-const stats = config.extensions.reduce((a, ext) => {
-    a[ext] = 0;
-    return a;
-}, {});
+
 
 const numberWithCommas = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -60,14 +58,20 @@ async function getDiskFreeSpace(config) {
     return ` [${numberWithCommas(Math.round(diskStats.free / (1024 * 1024)))} MB free]`
 }
 
-const statCollector = (file, ext) => stats[ext] += 1;
+const statCollector = (file, ext) => config.stats[ext] += 1;
 
-const getMessage = async () => Object.keys(stats).map(ext => `${ext}: ${stats[ext]}`).join(", ") + await getDiskFreeSpace(config);
+const getMessage = async () => {
+    if (this) {
+
+    }
+    return Object.keys(config.stats).map(ext => `${ext}: ${config.stats[ext]}`).join(", ") + await getDiskFreeSpace(config);
+}
 
 
 getFiles(config.directory, config.extensions, statCollector)
     .then(files => getMessage())
-    .then(msg => notify(config, msg, config.pushover.title))
+    .then(msg => msg && notify(config, msg, config.pushover.title))
+    .then(shouldUpdate => shouldUpdate && writeFile(configFile, JSON.stringify(config, null, 2)))
     .catch(err => console.log(err));
 
 
