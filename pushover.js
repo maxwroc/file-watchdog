@@ -3,13 +3,13 @@ const request = require("request");
 
 const notify = (config, msg, title) => {
 
-    if (!config.pushover || !config.pushover.token || !config.pushover.user) {
-        throw new Error("Missing pushover configuration");
-    }
-
     if (config.test) {
         console.log(title, msg);
         return true;
+    }
+
+    if (!config.pushover || !config.pushover.token || !config.pushover.user) {
+        throw new Error("Missing pushover configuration");
     }
 
     request.post("https://api.pushover.net/1/messages.json", {
