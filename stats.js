@@ -25,6 +25,17 @@ class Stats {
     record(ext) {
         return this.config.stats[ext] += 1;
     }
+
+    getDiff() {
+        return Object.keys(this.config.stats).reduce((acc, ext) => {
+            const diff = this.config.stats[ext] - this.prevStats[ext];
+            if (diff != 0) {
+                acc[ext] = diff;
+            }
+
+            return acc;
+        }, {});
+    }
 }
 
 exports.Stats = Stats;

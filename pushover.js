@@ -22,11 +22,10 @@ const notify = (config, msg, title) => {
         },
         (error, res, body) => {
             if (error) {
-                console.error(error);
+                console.error("file-watcher", error);
                 return;
             }
-            console.log(`statusCode: ${res.statusCode}`);
-            console.log(body);
+            console.log(`file-watcher: pushover response statusCode: ${res.statusCode}`);
         }
     );
 

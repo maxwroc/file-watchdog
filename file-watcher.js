@@ -32,7 +32,9 @@ const getMessage = async () => {
     if (!stats.isChanged()) {
         return;
     }
-    return Object.keys(config.stats).map(ext => `${ext}: ${config.stats[ext]}`).join(", ") + await getDiskFreeSpace(config);
+
+    const diff = stats.getDiff();
+    return Object.keys(diff).map(ext => `${ext}: ${diff[ext]}`).join(", ") + await getDiskFreeSpace(config);
 }
 
 
